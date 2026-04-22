@@ -602,7 +602,7 @@ class mfica:
         rng = np.random.default_rng()
 
         # Create 50 random re-sampling of the weights.
-        rnd = rng.multivariate_normal([self.w1, self.w2], self.cov, size=nIters)
+        rnd = rng.multivariate_normal([self.w1, self.w2], self.cov[:2,:2], size=nIters)
         w1_new = rnd[:, 0] # 10,000 different w1 values
         w2_new = rnd[:, 1] # 10,000 different w2 values
         del rnd
@@ -734,9 +734,9 @@ class mfica:
         
         # Make plots
         fig = plt.figure(figsize=(10,5), dpi=200)
-        gs = fig.add_gridspec(4, 10)
+        gs = fig.add_gridspec(6, 10)
 
-        ax = fig.add_subplot(gs[:3,:])
+        ax = fig.add_subplot(gs[:4,:])
         ax.set_ylabel(r'Flux (arbitrary units)')
         ax.plot(self.wl, self.flux, drawstyle='steps-mid', label='Spectrum', linewidth=0.3)
         ax.plot(self.wl, self.model, label='Total Reconstruction', color='tab:orange', lw=1.5)
@@ -754,7 +754,7 @@ class mfica:
         ax.tick_params('both', length=3, width=1, which='minor')
         ax.legend()
 
-        ax2 = fig.add_subplot(gs[3,:])
+        ax2 = fig.add_subplot(gs[4:,:])
         ax2.set_xlabel('Rest frame Wavelength ($\AA$)')
         ax2.set_ylabel('Residual')
         ax2.plot(self.wl, self.flux - self.model, drawstyle='steps-mid', linewidth=0.3, color='black')
@@ -765,6 +765,7 @@ class mfica:
         ax2.tick_params('both', length=7, width=1, which='major')
         ax2.tick_params('both', length=3, width=1, which='minor')
         ax2.grid(True, linestyle='--')
+        ax2.set_ylim([-0.3, 0.3])
 
         fig.tight_layout()
         plt.show()
