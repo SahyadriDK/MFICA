@@ -120,10 +120,10 @@ class mfica:
 
         """
         if self._use_qso_comps:
-            self.qspec = np.loadtxt("03.04.24 QSO Comps/quasar_comps_240403/QS2399_10c_noPSB_240403.comp")
+            self.qspec = np.loadtxt("Components/QS2399_10c_noPSB_240403.comp")
         if self._use_gal_comps:
-            self.gspec = np.loadtxt("EM-fixed Comps/GS_Sahyadri_S7_240610.comp")
-        self.comp_wl = np.loadtxt("06.03.24 Comps/wav33005200.dat")
+            self.gspec = np.loadtxt("Components/GS_Sahyadri_S7_240610.comp")
+        self.comp_wl = np.loadtxt("Components/wav33005200.dat")
         
         
     # Interpolate the spectra to component resolution (or change it to be vice versa?)
@@ -641,9 +641,9 @@ class mfica:
         # Get component fractions
         _ = self.get_comp_frac()
         
-        w1_gal = np.load("w1_gal_5200_alt.npy")
-        w2_gal = np.load("w2_gal_5200_alt.npy")
-        w3_gal = np.load("w3_gal_5200_alt.npy")
+        w1_gal = np.load("Components/w1_gal_5200_alt.npy")
+        w2_gal = np.load("Components/w2_gal_5200_alt.npy")
+        w3_gal = np.load("Components/w3_gal_5200_alt.npy")
         
         fig = plt.figure(figsize=(12,3.5), dpi=200)
         ax = fig.add_subplot(131)
