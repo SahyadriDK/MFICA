@@ -525,16 +525,22 @@ class mfica:
         # Assigne values to covariance matrix, making sure None values are 0
         param_names = ['GAL1', 'GAL2', 'GAL3']
         for i, p_row in enumerate(param_names):
+            
+            # Prior to calculation, check if covariance matrix exists
+            if self.fit_final.covar is None:
+                break
+            
             for j, p_col in enumerate(param_names):
+                
                 try:
                     # Find the position of these parameters in the cov matrix
                     idx_i = self.fit_final.var_names.index(p_row)
                     idx_j = self.fit_final.var_names.index(p_col)
-                    
+
                     # Set value of covariance matrix to the corresponding value
                     cov[i, j] = self.fit_final.covar[idx_i, idx_j]
+                    
                 except (ValueError, IndexError):
-                    # Leave value to zero
                     continue
 
         # Scale the covariance matrix using the jacobian

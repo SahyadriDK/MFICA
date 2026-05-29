@@ -31,7 +31,8 @@ import json
 #============= Spectrum loading functions (optional) =======================#
 #===========================================================================#
 
-# NOTE: THIS CODE ONLY WORKS FOR SDSS DR7. FOR YOUR OWN SPECTRA LOAD BY SELF
+# NOTE: THIS CODE ASSUMES THAT A WAVELENGTH ARRAY AND FLUX ARRAY (AND \
+# OPTIONALLY THE REDSHIFT) HAVE BEEN PROVIDED BY YOU THE USER.
 
 
 
@@ -42,17 +43,18 @@ import json
 # Define a class that takes already loaded spectra, interpolates it to the \
 # wavelength grid of the MFICA components.
 
-# Assumes that only the raw spectra have been provided. They are likely to /
-# in arbitrary units.
+# Assumes that only the raw spectra have been provided. The raw spectra must \
+# must be in units of erg/s/cm^2/AA, with wavleengths in angstrom only.
 
 class mfica:
     
     # initialise basic parameters of class
-    def __init__(self, wl, flux, err, gal=True, qso=True, interpolate=False):
+    def __init__(self, wl, flux, err, z=None, gal=True, qso=True, interpolate=False, 
+                 mask=None, sky_mask=False):
         """
         Initialisation of MFICA object class for decomposition of spectra.
         Must provide wavelength, flux and error from spectra.
-        Need to assume that raw spectra and redshifts are given
+        Need to assume that raw spectra and redshifts are given.
 
         Parameters
         ----------
@@ -62,12 +64,22 @@ class mfica:
             Array or list with flux values at each wavelength bin.
         err : array
             Array or list with errors on individual flux values.
+        z   : float, optional
+            Redshift of object. The default is None. If no value given, assumes
+            that spectra provided are already in rest-frame units.
         gal : bool, optional
             Condition to set use of galaxy components. The default is True.
         qso : bool, optional
             Condition to set use of quasar components. The default is True.
         interpolate: bool, optional
             Condition to determine if need interpolation of spectra. The default is False.
+        mask: array, optional
+            Nested array of rest-frame wavelengths to be masked. For example, to mask Hbeta
+            and OIII 5007, you can provide the following array - [[4850, 4880], [4995, 5020]]
+            In each nested list, the first element is the start and the second element is the
+            ending wavelength. Everything in between these two is masked.
+        sky_mask: bool, optional
+            Condition to determine if telluric skylines need to be masked.
 
         Raises
         ------
@@ -102,6 +114,9 @@ class mfica:
         self.err_old = None
         self.wl_old = None
         self.interpolate = interpolate
+        self.z = z
+        self.feature_mask = mask
+        self.sky_mask = sky_mask
         
         # Must have atleast one of the components set to True
         if (not self._use_gal_comps) and (not self._use_qso_comps):
@@ -138,6 +153,7 @@ class mfica:
         None.
 
         """
+        
         # Save the fluxes into copies before use
         self.flux_old = deepcopy(self.flux)
         self.err_old = deepcopy(self.err)
@@ -145,6 +161,93 @@ class mfica:
         #  Use SPECTRES. Replace with dedicated code in future
         self.flux, self.err = spectres(self.comp_wl, self.wl, self.flux, self.err, verbose=False)
         self.wl = deepcopy(self.comp_wl)
+        
+    
+    # Shift spectra to rest-frame, while conserving flux in log space.
+    def rz_corr(self):
+        """
+        Method that shifts a spectrum from the observed frame to its rest-frame
+        wavelength range. Uses the redshift attribute provided when initialising
+        the MFICA object.
+        Overrides previous wavelength, flux and eror attributes.
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        # Obtaint the log wavelengths in rest-frame and observed frame
+        log_wave_obs = np.log10(self.wl)
+        log_wave_rest = log_wave_obs - (np.round((np.log10(1+self.z)*1e4))/1e4) # Calculated using 1+z factor
+        
+        # Calculate the rest frame flux and error
+        flux_rest = self.flux * ((10.0**(log_wave_obs))/(10.0**(log_wave_rest)))
+        err_rest = self.err * ((10.0**(log_wave_obs))/(10.0**(log_wave_rest))) # Errors also scaled up
+        
+        # Make assignments and delete extra junk
+        self.wl = 10.0**log_wave_rest
+        self.flux = flux_rest
+        self.err = err_rest
+        del log_wave_rest, log_wave_obs, flux_rest, err_rest # Delete extra variables.
+        
+        
+    # Function to mask out some specifically bad telluric emission lines.
+    def mask_skylines(self):
+        
+        # Define a nested list of wavelengths to be masked
+        skylines = [[5574,5590],[5885.9,5901.9],[4276,4282],[6297,6305],[6364,6368]]
+        # The inner list are ranges of wavelengths that need to be masked.
+        upper = [x[1] for x in skylines]
+        lower = [x[0] for x in skylines]
+        # Mask between upper and lower
+        mask = []
+        for i in range(len(upper)):
+            index = np.where((self.wl < float(upper[i])) & (self.wl >= float(lower[i])))[0] # From Hin's code
+            mask.extend(index)
+        
+        # Set the errors to infinity. For clarity, fluxes are untouched.
+        self.err[mask] = 9.99e99 # Just a very large number
+        del mask, skylines, upper, lower
+        
+        
+    # Function to mask any rest-frame features during MFICA fitting.
+    def mask_pixels(self):
+        """
+        Generic function to mask a range of pixels during fitting. The mask 
+        of features needs to be of the format [[start, finish], ...], where
+        each element of the nested list is the lower and upper wavelength limit of
+        the feature being masked. The provided wavelengths should correspond to
+        REST-FRAME features. Eg: To mask OIII 5007, provide [[4990, 5010]]
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        # Find upper and lower wavlengths given in mask
+        upper = [x[1] for x in self.feature_mask]
+        lower = [x[0] for x in self.feature_mask]
+        # Mask between upper and lower
+        mask = []
+        for i in range(len(upper)):
+            index = np.where((self.wl < float(upper[i])) & (self.wl >= float(lower[i])))[0] # From Hin's code
+            mask.extend(index)
+    
+        # Set errors to infinitely large numbers based on the provided boolean mask
+        # Pixels to be masked set to True, all else False
+        self.err[mask] = 9.99e99
+        del mask
+        
+        
+    # Function to normalise the spectra by its mean
+    def mn_norm(self):
+        
+        # Calculate the mean in the full spectrum range
+        self.mean = np.mean(self.flux)
+        self.flux = self.flux / self.mean
+        self.err = self.err / self.mean
         
     
     # Use the model parameters to generate host galaxy reconstruction
@@ -455,9 +558,24 @@ class mfica:
         # Load components
         self.load_comps()
         
+        # Apply skyline masking in observed frame
+        if self.sky_mask:
+            self.mask_skylines()
+        
+        # Shift spectra to rest-frame
+        if self.z is not None:
+            self.rz_corr()
+        
         # Interpolate the spectra
         if self.interpolate:
             self.interp_flux()
+            
+        # Normalise the spectra
+        self.mn_norm()
+            
+        # Mask rest-frame features prior to fitting
+        if self.feature_mask is not None:
+            self.mask_pixels()
         
         # Fit the spectra
         self.first_fit()
@@ -525,16 +643,22 @@ class mfica:
         # Assigne values to covariance matrix, making sure None values are 0
         param_names = ['GAL1', 'GAL2', 'GAL3']
         for i, p_row in enumerate(param_names):
+            
+            # Prior to calculation, check if covariance matrix exists
+            if self.fit_final.covar is None:
+                break
+            
             for j, p_col in enumerate(param_names):
+                
                 try:
                     # Find the position of these parameters in the cov matrix
                     idx_i = self.fit_final.var_names.index(p_row)
                     idx_j = self.fit_final.var_names.index(p_col)
-                    
+
                     # Set value of covariance matrix to the corresponding value
                     cov[i, j] = self.fit_final.covar[idx_i, idx_j]
+                    
                 except (ValueError, IndexError):
-                    # Leave value to zero
                     continue
 
         # Scale the covariance matrix using the jacobian
@@ -732,6 +856,29 @@ class mfica:
         # Get component fractions
         # _ = self.get_comp_frac()
         
+        # Set some neat plotting attributes
+        plt.style.use('default')
+        plt.rcParams.update({
+            'figure.figsize': (10, 6),
+            'axes.labelsize': 14,
+            'axes.titlesize': 16,
+            'xtick.labelsize': 12,
+            'ytick.labelsize': 12,
+            'legend.fontsize': 10,
+            'lines.linewidth': 1.5,
+            'lines.markersize': 6,
+            'axes.linewidth': 2.4,  # Bold borders
+            'xtick.major.size': 7,  # Major tick size
+            'ytick.major.size': 7,  # Major tick size
+            'xtick.minor.size': 4,  # Minor tick size
+            'ytick.minor.size': 4,  # Minor tick size
+            'xtick.major.width': 1.5,
+            'ytick.major.width': 1.5,
+            'xtick.minor.width': 1,
+            'ytick.minor.width': 1,
+            'errorbar.capsize': 3,  # Length of the error bar caps
+        })
+        
         # Make plots
         fig = plt.figure(figsize=(10,5), dpi=200)
         gs = fig.add_gridspec(6, 10)
@@ -765,7 +912,6 @@ class mfica:
         ax2.tick_params('both', length=7, width=1, which='major')
         ax2.tick_params('both', length=3, width=1, which='minor')
         ax2.grid(True, linestyle='--')
-        ax2.set_ylim([-0.3, 0.3])
 
         fig.tight_layout()
         plt.show()
