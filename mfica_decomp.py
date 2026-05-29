@@ -181,6 +181,10 @@ class mfica:
         log_wave_obs = np.log10(self.wl)
         log_wave_rest = log_wave_obs - (np.round((np.log10(1+self.z)*1e4))/1e4) # Calculated using 1+z factor
         
+        # Check if the provided redshifts give rest-frame wavelengths that are outside threshold
+        if (np.max(10.0**log_wave_rest) < 5200-1e-3) or (np.min(10.0**log_wave_rest[0]) > 3300+1e-3):
+            raise Exception("After shifting to rest-frame, the spectrum is outside the 3300-5200 $\AA$ range. Try another object.")
+        
         # Calculate the rest frame flux and error
         flux_rest = self.flux * ((10.0**(log_wave_obs))/(10.0**(log_wave_rest)))
         err_rest = self.err * ((10.0**(log_wave_obs))/(10.0**(log_wave_rest))) # Errors also scaled up
@@ -550,6 +554,19 @@ class mfica:
         mini = Minimizer(self.ICAfit, params_final, fcn_args=(self.flux, self.err))
         self.fit_final = mini.minimize()
         #model = self.ICArecon(fit_final.params) # The total/composite spectra
+        
+        
+    # Define a function to calculate all useful quantities from the fitting.
+    def useful_quant(self):
+        
+        # Calcuate the host fraction at 4200, 5100 and over the full spectrum.
+        self.fhost_4200 = np.mean(self.model_gal[(self.wl > 4180) & (self.wl < 4220)] /
+                                  self.model[(self.wl > 4180) & (self.wl < 4220)])
+        self.fhost_5100 = np.mean(self.model_gal[(self.wl > 5080) & (self.wl < 5120)] /
+                                  self.model[(self.wl > 5080) & (self.wl < 5120)])
+        self.fhost_full = np.mean(self.model_gal / self.model)
+        
+        # Calculate L5100 (TO-DO)
     
     
     # Organise into a final fitting function that does all of the stuff
@@ -588,6 +605,9 @@ class mfica:
             self.model_qso = self.gen_qso(self.fit_final.params)
         if self._use_gal_comps:
             self.model_gal = self.gen_gal(self.fit_final.params)
+            
+        # Calculate useful quantities.
+        self.useful_quant()
         
         
     # Calculate the Jacobian matrix
@@ -714,6 +734,8 @@ class mfica:
         
     # Determine the host galaxy type
     def galaxy_type(self):
+        
+        self.get_comp_frac()
         
         # Check that galaxy components are ON.
         if not self._use_gal_comps:
