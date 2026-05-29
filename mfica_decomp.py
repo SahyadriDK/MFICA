@@ -8,19 +8,11 @@ Created on Thu Apr  9 21:48:08 2026
 
 import pandas as pd
 import numpy as np
-import lmfit as lm
 import matplotlib.pyplot as plt
-import copy
 from copy import deepcopy
 from lmfit import minimize, Parameters, Minimizer
-import glob
-from astropy.io import fits
 import astropy.units as u
 from dust_extinction.parameter_averages import O94, CCM89
-from matplotlib.gridspec import GridSpec
-from matplotlib.backends.backend_pdf import PdfPages
-from dust_attenuation.averages import C00
-import astropy.units as u
 from scipy.integrate import simpson
 from spectres import spectres
 from matplotlib.ticker import MultipleLocator
