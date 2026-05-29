@@ -1,2 +1,10 @@
+# Python files
 ica_base.py
 mfica.py
+
+# Folders
+__pycache__/
+.ipynb_checkpoints/
+
+# Others
+.DS_Store
