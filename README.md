@@ -8,6 +8,8 @@ Included in this repository is an [example](https://github.com/SahyadriDK/MFICA/
 
 MFICA spectrum decomposition takes arrays of wavelengths, fluxes and errors on fluxes for a given spectrum and decomposes this spectrum into its host galaxy and purely AGN spectra. From these spectra, MFICA can also return useful host galaxy properties, including estimates of the current stellar populations of the given object.
 
+This code uses components created using matlab code written by Paul Hewett, based on the original MF-ICA code from [Højen-Sørensen et al. (2002)](https://doi.org/10.1162/089976602317319009).
+
 ---
 
 ### Basic Installation:
