@@ -12,7 +12,12 @@ MFICA spectrum decomposition takes arrays of wavelengths, fluxes and errors on f
 
 ### Basic Installation:
 
-We recommend installing this code inside a separate environment, either through Conda or as a virtual environment.
+We recommend installing this code inside a separate environment, either through Conda or as a virtual environment. For example, you can create a virtual environment using the following bash code:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
 
 After that, a clean installation can be run using the following bash code:
 
