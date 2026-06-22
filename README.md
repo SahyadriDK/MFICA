@@ -12,6 +12,16 @@ MFICA spectrum decomposition takes arrays of wavelengths, fluxes and errors on f
 
 ### Basic Installation:
 
+We recommend installing this code inside a separate environment, either through Conda or as a virtual environment.
+
+After that, a clean installation can be run using the following bash code:
+
+```bash
+git clone https://github.com/SahyadriDK/MFICA.git
+cd MFICA
+pip install .
+```
+
 ---
 
 ### Citation:
