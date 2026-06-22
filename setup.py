@@ -35,7 +35,7 @@ setup(
     description="Code for decomposition of quasar and galaxy spectra with MFICA components.",
     long_description=long_descript,
     url="https://github.com/SahyadriDK/MFICA",
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
