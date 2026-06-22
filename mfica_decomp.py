@@ -114,6 +114,14 @@ class mfica:
         if (not self._use_gal_comps) and (not self._use_qso_comps):
             raise Exception("Atleast one of the components needs to be set to True.")
         
+        # # Check if the feature mask is of the right format
+        # if not isinstance(self.feature_mask, (list, np.ndarray)):
+        #     raise Exception("The rest-frame feature mask is not a list or array.")   
+        # # Convert to an array
+        # self.feature_mask = np.array(self.feature_mask)
+        # # Check its shape
+        # if (len(self.feature_mask)==0) or (self.feature_mask.ndim != 2) or (self.feature_mask.shape)
+        
         
     # Load the components
     def load_comps(self):
@@ -551,15 +559,15 @@ class mfica:
     # Define a function to calculate all useful quantities from the fitting.
     def useful_quant(self):
         
-        # Calcuate the host fraction at 4200, 5100 and over the full spectrum.
-        self.fhost_4200 = np.mean(self.model_gal[(self.wl > 4180) & (self.wl < 4220)] /
-                                  self.model[(self.wl > 4180) & (self.wl < 4220)])
-        self.fhost_5100 = np.mean(self.model_gal[(self.wl > 5080) & (self.wl < 5120)] /
-                                  self.model[(self.wl > 5080) & (self.wl < 5120)])
-        self.fhost_full = np.mean(self.model_gal / self.model)
+        if self._use_gal_comps:
+            # Calcuate the host fraction at 4200, 5100 and over the full spectrum.
+            self.fhost_4200 = np.mean(self.model_gal[(self.wl > 4180) & (self.wl < 4220)] /
+                                      self.model[(self.wl > 4180) & (self.wl < 4220)])
+            self.fhost_5100 = np.mean(self.model_gal[(self.wl > 5080) & (self.wl < 5120)] /
+                                      self.model[(self.wl > 5080) & (self.wl < 5120)])
+            self.fhost_full = np.mean(self.model_gal / self.model)
         
-        # Calculate L5100 (TO-DO)
-    
+
     
     # Organise into a final fitting function that does all of the stuff
     def fit_comps(self):
