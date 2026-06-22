@@ -17,6 +17,7 @@ from scipy.integrate import simpson
 from spectres import spectres
 from matplotlib.ticker import MultipleLocator
 import json
+import os
 
 
 #===========================================================================#
@@ -134,11 +135,16 @@ class mfica:
         None.
 
         """
+        base_dir = os.path.dirname(__file__)
+
         if self._use_qso_comps:
-            self.qspec = np.loadtxt("Components/QS2399_10c_noPSB_240403.comp")
+            qso_comp_path = os.path.join(base_dir, "Components", "QS2399_10c_noPSB_240403.comp")
+            self.qspec = np.loadtxt(qso_comp_path)
         if self._use_gal_comps:
-            self.gspec = np.loadtxt("Components/GS_Sahyadri_S7_240610.comp")
-        self.comp_wl = np.loadtxt("Components/wav33005200.dat")
+            gal_comp_path = os.path.join(base_dir, "Components", "GS_Sahyadri_S7_240610.comp")
+            self.gspec = np.loadtxt(gal_comp_path)
+        wl_path = os.path.join(base_dir, "Components", "wav33005200.dat")
+        self.comp_wl = np.loadtxt(wl_path)
         
         
     # Interpolate the spectra to component resolution (or change it to be vice versa?)
