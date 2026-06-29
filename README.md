@@ -8,21 +8,26 @@ Included in this repository is an [example](https://github.com/SahyadriDK/MFICA/
 
 MFICA spectrum decomposition takes arrays of wavelengths, fluxes and errors on fluxes for a given spectrum and decomposes this spectrum into its host galaxy and purely AGN spectra. From these spectra, MFICA can also return useful host galaxy properties, including estimates of the current stellar populations of the given object.
 
-MFICA galaxy and quasar spectral components used in this python code were created by Paul Hewett, using a modified version of the original MF-ICA Matlab code from [Højen-Sørensen et al. (2002)](https://doi.org/10.1162/089976602317319009).
+MFICA galaxy and quasar components used in this python code were created by Paul Hewett, using a modified version of the original MF-ICA Matlab code from [Højen-Sørensen et al. (2002)](https://doi.org/10.1162/089976602317319009).
 
 ---
 
 ### Basic Installation:
 
-We recommend installing this code inside a separate environment, through say Conda (recommended). For example, below is a set of bash commands for pulling the github repo and installing MFICA in a fresh conda environment. 
+We recommend installing this code inside a separate environment, through say Conda (recommended). Prior to the installation, it is recommended to deactivate existing conda environments with the bash (terminal) command:
 
 ```bash
-conda deactivate  # OPTIONAL: Exits existing environment
-git clone https://github.com/SahyadriDK/MFICA.git # Clones Git repository
-cd MFICA  # Change directory to repository
-conda env create -f environment.yml  # Create a Conda environment from the .yml file
-conda activate mfica_env # Activate freshly created conda environment
-pip install .  # Runs installation through setup.py
+conda deactivate
+```
+
+After this, to install MFICA simply run the following bash (terminal) commands:
+
+```bash
+git clone https://github.com/SahyadriDK/MFICA.git
+cd MFICA
+conda env create -f environment.yml
+conda activate mfica_env
+pip install .
 ```
 
 ---
