@@ -1,0 +1,9 @@
+name: mfica_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9.12
+  - pip
+  - pip:
+    - -r requirements.txt
