@@ -30,6 +30,8 @@ conda activate mfica_env
 pip install .
 ```
 
+NOTE: To log-in to git via your terminal and to pull this Github repo, you may need an Personal Access Token (as opposed to your typical Github password). For more information, see: [https://medium.com/@yoshiyuki.watanabe/why-git-clone-fails-with-password-authentication-is-not-supported-on-aws-cloudshell-68b1a779a17e](https://medium.com/@yoshiyuki.watanabe/why-git-clone-fails-with-password-authentication-is-not-supported-on-aws-cloudshell-68b1a779a17e)
+
 ---
 
 ### Citation:
