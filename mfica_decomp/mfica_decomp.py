@@ -110,6 +110,7 @@ class mfica:
         self.z = z
         self.feature_mask = mask
         self.sky_mask = sky_mask
+        self.base_dir = os.path.dirname(__file__)
         
         # Must have atleast one of the components set to True
         if (not self._use_gal_comps) and (not self._use_qso_comps):
@@ -135,15 +136,14 @@ class mfica:
         None.
 
         """
-        base_dir = os.path.dirname(__file__)
-
+        
         if self._use_qso_comps:
-            qso_comp_path = os.path.join(base_dir, "Components", "QS2399_10c_noPSB_240403.comp")
+            qso_comp_path = os.path.join(self.base_dir, "Components", "QS2399_10c_noPSB_240403.comp")
             self.qspec = np.loadtxt(qso_comp_path)
         if self._use_gal_comps:
-            gal_comp_path = os.path.join(base_dir, "Components", "GS_Sahyadri_S7_240610.comp")
+            gal_comp_path = os.path.join(self.base_dir, "Components", "GS_Sahyadri_S7_240610.comp")
             self.gspec = np.loadtxt(gal_comp_path)
-        wl_path = os.path.join(base_dir, "Components", "wav33005200.dat")
+        wl_path = os.path.join(self.base_dir, "Components", "wav33005200.dat")
         self.comp_wl = np.loadtxt(wl_path)
         
         
@@ -793,9 +793,15 @@ class mfica:
         # Get component fractions
         _ = self.get_comp_frac()
         
-        w1_gal = np.load("Components/w1_gal_5200_alt.npy")
-        w2_gal = np.load("Components/w2_gal_5200_alt.npy")
-        w3_gal = np.load("Components/w3_gal_5200_alt.npy")
+        # Paths to the files containing galaxy component fractions for visualisation
+        w1_path = os.path.join(self.base_dir, "Components", "w1_gal_5200_alt.npy")
+        w2_path = os.path.join(self.base_dir, "Components", "w2_gal_5200_alt.npy")
+        w3_path = os.path.join(self.base_dir, "Components", "w3_gal_5200_alt.npy")
+
+        # Load from previous path
+        w1_gal = np.load(w1_path)
+        w2_gal = np.load(w2_path)
+        w3_gal = np.load(w3_path)
         
         fig = plt.figure(figsize=(12,3.5), dpi=200)
         ax = fig.add_subplot(131)
